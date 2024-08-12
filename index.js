@@ -33,7 +33,7 @@ async function run() {
     await client.connect();
 
 const serviceCollection = client.db("carDoctor").collection("services");
-
+const bookingCollection = client.db("carDoctor").collection("bookings");
 
 app.get("/services", async (req, res) => {
    const cursor = serviceCollection.find(); 
@@ -51,6 +51,13 @@ app.get("/services/:id", async (req, res) => {
   const result = await serviceCollection.findOne(query);
     res.send(result);
 
+})
+
+app.post("/bookings", async (req, res) => {
+   const checkout = req?.body;
+   console.log(checkout);
+    const result = await bookingCollection.insertOne(checkout);
+    res.send(result); 
 })
 
 
