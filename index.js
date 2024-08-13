@@ -11,7 +11,11 @@ const port = process.env.PORT || 3000;
 // 0VMxQp2y1U5AuPXB
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin : [
+        "http://localhost:5173"
+  ],
+}));
 app.use(express.json());
 
 
@@ -35,6 +39,9 @@ async function run() {
 const serviceCollection = client.db("carDoctor").collection("services");
 const bookingCollection = client.db("carDoctor").collection("bookings");
 
+
+// service related api 
+
 app.get("/services", async (req, res) => {
    const cursor = serviceCollection.find(); 
    const result = await cursor.toArray();
@@ -53,6 +60,19 @@ app.get("/services/:id", async (req, res) => {
 
 })
 
+// booking relaated api
+
+app.get("/bookings", async(req, res) => {
+  console.log(req.query.email);
+   let query = {}; 
+   if(req.query?.email){
+      query = { email: req.query.email}
+   }
+    const cursor = bookingCollection.find(query);
+    const result = await cursor.toArray();
+    res.send(result);
+})
+
 app.post("/bookings", async (req, res) => {
    const checkout = req?.body;
    console.log(checkout);
@@ -60,7 +80,26 @@ app.post("/bookings", async (req, res) => {
     res.send(result); 
 })
 
+app.patch("/bookings/:id", async(req, res) => {
+     const id = req.params.id;
+     const filter = {_id: new ObjectId(id)}
+     const updatedBooking = req?.body; 
+     console.log(updatedBooking);
+     const updateDoc = {
+        $set: {
+            status: updatedBooking.status
+        },
+     }
+     const result = await bookingCollection.updateOne(filter, updateDoc);
+     res.send(result);
+})
 
+app.delete("/bookings/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {_id : new ObjectId(id)};
+    const booking = await bookingCollection.deleteOne(query);
+    res.send(booking);
+})
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
